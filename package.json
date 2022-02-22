@@ -1,0 +1,15 @@
+{
+  "name": "SH-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Sergey Dyakov <s.dyakov9@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.3",
+    "socket.io": "^4.4.1",
+    "typeorm": "^0.2.43"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13"
+  }
+}
