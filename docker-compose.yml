@@ -1,0 +1,22 @@
+version: '3'
+services:
+  database:
+    image: 'postgres'
+    restart: 'always'
+    ports:
+      - 5632:5632
+    env_file:
+      - database.env
+    networks:
+      - webnet
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6579:6579
+    networks:
+      - webnet
+    command: sh -c 'redis-server'
+
+networks:
+  webnet:
