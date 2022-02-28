@@ -6,7 +6,7 @@ services:
     ports:
       - 5632:5632
     env_file:
-      - database.env
+      - .env
     networks:
       - webnet
 

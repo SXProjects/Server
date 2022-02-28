@@ -1,10 +1,10 @@
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 import { createClient } from 'redis';
+import { router } from './router';
 
 import express from 'express';
 import cors from 'cors';
-import { router } from './router';
 
 (async () => {
   const serverPort = 8080; // move to .env
@@ -12,14 +12,7 @@ import { router } from './router';
   const redis = createClient();
   const app = express();
   const server = createServer(app);
-
-  app.use(cors());
-  app.use(router);
-
   await redis.connect();
-  redis.on('error', (err) => {
-    console.log('Error ' + err);
-  });
 
   const websocket = new Server(server, {
     cors: {
@@ -28,6 +21,8 @@ import { router } from './router';
       credentials: true,
     },
   });
+  app.use(cors());
+  app.use(router);
 
   websocket.on('connection', (socket) => {
     socket.on('connect_system', (message) => {
@@ -35,16 +30,21 @@ import { router } from './router';
     });
 
     socket.on('send_cmd', async (message) => {
+      console.log(message.to);
       if ((await redis.get(message.to)) !== null) {
         const socket = (await redis.get(message.to)) as string;
         websocket
           .to(socket)
           .emit('receive_cmd', { from: message.from, command: message.body });
+      } else if ((await redis.get(message.to)) === null) {
+        console.log(`No such recipient exists: ${message.to}`);
+      } else if (message.to === '') {
+        console.log(`Recipient not declared in message: ${message.from}`);
       }
     });
   });
 
   server.listen(serverPort, () => {
-    console.log('server started');
+    console.log(`Server started at ${new Date()}`);
   });
 })();
