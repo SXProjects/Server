@@ -1,45 +1,27 @@
 import { createServer } from 'http';
 import { router } from './router';
 import { createConnection } from 'typeorm';
-import { createClient } from 'redis';
-import { LOGIN_COOKIE, __prod__ } from 'vars';
+import { initAdminUser } from './routes/user';
+import { login_session } from './session';
+import { redisClient } from './session';
 
 import express from 'express';
-import session from 'express-session';
 import cors from 'cors';
-import connectRedis from 'connect-redis';
-import config from './config';
 
 (async () => {
-  const serverPort = 8010; // move to .env
-
-  const RedisStore = connectRedis(session);
-  const redisClient = createClient();
+  const serverPort = 8020; // move to .env
 
   const app = express();
-  app.use(cors());
+  app.use(cors({ origin: '*', credentials: true }));
+  app.use(login_session);
   app.use(router);
-
-  app.use(
-    session({
-      name: LOGIN_COOKIE,
-      store: new RedisStore({ client: redisClient as any, disableTouch: true }), // disableTouch - off time-to-alive
-      cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: true,
-        sameSite: 'lax', // csrf
-        secure: __prod__, // work only with https
-      },
-      saveUninitialized: false,
-      secret: config.secret,
-      resave: false,
-    })
-  );
 
   const server = createServer(app);
 
   createConnection().then(async (conn) => {
-    await conn.runMigrations;
+    await conn.runMigrations();
+    await redisClient.connect();
+    initAdminUser();
     server.listen(serverPort, () => {
       console.log(`Server started at ${new Date()}`);
     });
