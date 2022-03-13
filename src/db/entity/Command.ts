@@ -6,11 +6,17 @@ export class Command extends BaseEntity {
   id: number;
 
   @Column()
-  from: string;
+  device_id: number;
 
   @Column()
-  to: string;
+  time: Date;
 
   @Column()
-  body: string;
+  command_name: string;
+
+  @Column()
+  first_command_data: string;
+
+  @Column()
+  second_command_data?: string;
 }
