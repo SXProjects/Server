@@ -1,8 +1,7 @@
-import express from 'express';
+import express, { NextFunction } from 'express';
 import { getCmd, pushCmd, transfer } from './routes/command';
 import { login, register } from './routes/user';
 import { json } from 'express';
-import { loginSession } from './index';
 import cors from 'cors';
 
 const router = express.Router();

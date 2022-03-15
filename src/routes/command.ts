@@ -1,6 +1,6 @@
 import { Command } from '../db/entity/Command';
 import { Request, Response } from 'express';
-import { Server } from 'socket.io';
+import { Server, WebSocket } from 'ws';
 
 export async function pushCmd(commandJson: any) {
   checkCommandExist(commandJson);
@@ -29,8 +29,8 @@ export async function getCmd(req: Request, res: Response) {
 }
 
 export function transfer(req: Request, res: Response) {
-  const websocket: Server = req.app.get('websocket');
-  websocket.emit('transfer', req.body);
+  const websocket: WebSocket = req.app.get('websocket');
+  websocket.send(JSON.parse(req.body));
   res.status(200).end();
 }
 
