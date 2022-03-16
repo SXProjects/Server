@@ -71,8 +71,16 @@ export async function login(req: Request, res: Response) {
     });
   }
 
-  console.log(req);
-  console.log(req.session);
   req.session.userId = user!.id;
   res.status(200).end();
+}
+
+export async function getUser(req: Request, res: Response) {
+  console.log(req.session.userId);
+  if (!req.session.userId) {
+    res.status(404).end('Please, login first.');
+  }
+
+  const user = await User.findOne({ id: req.session.userId });
+  res.status(200).send(user);
 }

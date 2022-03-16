@@ -7,11 +7,27 @@ import express from 'express';
 import cors from 'cors';
 import { WebSocketServer, WebSocket } from 'ws';
 import { pushCmd } from './routes/command';
+import session from 'express-session';
+import config from './config';
+import { LOGIN_COOKIE } from '../vars';
 
 const serverPort = 8080; // move to .env
 const app = express();
 const server = createServer(app);
 const websocket = new WebSocketServer({ server: server });
+
+app.use(
+  session({
+    name: LOGIN_COOKIE,
+    secret: config.secret,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
+      httpOnly: true,
+      sameSite: 'lax',
+    },
+  })
+);
 
 app.use(cors({ origin: '*', credentials: true }));
 app.use(router);
