@@ -7,7 +7,7 @@ import cors from 'cors';
 const router = express.Router();
 
 router.use(json());
-router.use(cors({ origin: '*', credentials: true }));
+router.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 
 router.post('/command/transfer', transfer);
 router.post('/command/get', getCmd);

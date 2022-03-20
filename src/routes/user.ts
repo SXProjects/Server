@@ -26,29 +26,30 @@ export async function register(req: Request, res: Response) {
   const loggedInUser = await User.findOne({ id: req.session.userId });
 
   if (loggedInUser !== null) {
-    if (loggedInUser!.permission == UserPermission.Admin) {
-      const newUserData = req.body;
-
-      if (newUserData.password!.length > 5) {
-        res
-          .status(409)
-          .send({ error: 'Password length should be greater than five.' });
-      }
-
-      const hashedPassword = await argon2.hash(newUserData.password);
-      await User.create({
-        name: newUserData.name,
-        password: hashedPassword,
-        permission: newUserData.permission,
-        lifeTime: newUserData.lifeTime,
-      }).save();
-
-      res.status(200).end();
-    } else {
+    if (loggedInUser!.permission !== UserPermission.Admin) {
       res.status(403).send({
-        error: 'Please, log in with an admin account and try again.',
+        error:
+          'Пожалуйста войдите в аккаунт с правами админа и попробуйте снова',
       });
+      return;
     }
+    const newUserData = req.body;
+
+    if (newUserData.password!.length > 5) {
+      res
+        .status(409)
+        .send({ error: 'Password length should be greater than five.' });
+    }
+
+    const hashedPassword = await argon2.hash(newUserData.password);
+    await User.create({
+      name: newUserData.name,
+      password: hashedPassword,
+      permission: newUserData.permission,
+      lifeTime: newUserData.lifeTime,
+    }).save();
+
+    res.status(200).end();
   }
 }
 
@@ -56,18 +57,18 @@ export async function login(req: Request, res: Response) {
   const user = await User.findOne({ name: req.body.name });
   if (!user) {
     res.status(404).send({
-      error: "That user doesn't exist.",
+      error: 'Некоррректно введены данные.',
     });
   }
 
   const valid = await argon2.verify(
-    user?.password as string,
+    user!.password as string,
     req.body.password
   );
 
   if (!valid) {
     res.status(403).send({
-      error: 'Incorrect password.',
+      error: 'Некоррректно введены данные.',
     });
   }
 
