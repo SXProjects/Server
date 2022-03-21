@@ -4,3 +4,4 @@ yarn.lock
 .gitignore
 ormconfig.json
 dist
+.env

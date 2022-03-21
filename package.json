@@ -6,8 +6,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
-    "start": "node dist/src/index.js",
-    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
+    "start": "node dist/index.js",
+    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
+    "build": "tsc -p ."
   },
   "dependencies": {
     "@types/morgan": "^1.9.3",

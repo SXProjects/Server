@@ -1,15 +1,14 @@
 import { Command } from '../db/entity/Command';
 import { Request, Response } from 'express';
-import { Server, WebSocket } from 'ws';
+import { WebSocket } from 'ws';
 
-export async function pushCmd(commandJson: any) {
+export async function saveCmd(commandJson: any) {
   checkCommandExist(commandJson);
   await Command.create({
     device_id: commandJson.device_id,
     time: new Date(commandJson.time),
     command_name: commandJson.command_name,
-    first_command_data: commandJson.first_command_data as string,
-    second_command_data: (commandJson.second_command_data as string) || '',
+    data: commandJson.data,
   }).save();
 }
 
@@ -22,16 +21,28 @@ export async function getCmd(req: Request, res: Response) {
     commands!.forEach(async (element) => {
       await Command.remove(element as Command);
     });
-    res.status(200).send(commands);
+    res.status(200).send(JSON.stringify(commands));
   } else {
     res.status(404).end();
   }
 }
 
-export function transfer(req: Request, res: Response) {
+export async function sendCmd(req: Request, res: Response) {
   const websocket: WebSocket = req.app.get('websocket');
-  websocket.send(JSON.parse(req.body));
-  res.status(200).end();
+  websocket.send(JSON.stringify(req.body));
+  let response = {};
+  await websocket.on('message', (msg: Buffer) => {
+    const msgJson: any[] = JSON.parse(msg.toString());
+    msgJson.forEach((element) => {
+      response = element;
+    });
+  });
+
+  if (!JSON.parse(JSON.stringify(response)).hasOwnProperty('error')) {
+    res.status(200).send(JSON.stringify(response));
+  } else {
+    res.status(400).send(JSON.stringify(response));
+  }
 }
 
 async function checkCommandExist(newCommand: any) {

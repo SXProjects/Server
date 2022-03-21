@@ -15,7 +15,8 @@
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    "emitDecoratorMetadata": true,
-    "typeRoots": ["./src/typings", "./node_modules/@types"]
-  }
+    "emitDecoratorMetadata": true
+  },
+  "exclude": ["node_modules"],
+  "include": ["./src/**/*.tsx", "./src/**/*.ts"]
 }

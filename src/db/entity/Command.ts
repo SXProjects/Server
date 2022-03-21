@@ -14,9 +14,6 @@ export class Command extends BaseEntity {
   @Column()
   command_name: string;
 
-  @Column()
-  first_command_data: string;
-
-  @Column()
-  second_command_data?: string;
+  @Column({ type: 'jsonb', array: true })
+  data: object[];
 }

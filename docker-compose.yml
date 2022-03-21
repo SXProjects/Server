@@ -9,13 +9,5 @@ services:
     networks:
       - webnet
 
-  redis:
-    image: redis:alpine
-    ports:
-      - 6379:6379
-    networks:
-      - webnet
-    command: sh -c 'redis-server'
-
 networks:
   webnet:
