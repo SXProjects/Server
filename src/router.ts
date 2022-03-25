@@ -1,5 +1,5 @@
-import express, { NextFunction } from 'express';
-import { getCmd, saveCmd, sendCmd } from './routes/command';
+import express from 'express';
+import { getCmd, sendCmd } from './routes/command';
 import { sendData } from './routes/data';
 import { getUser, login, register } from './routes/user';
 import { json } from 'express';
