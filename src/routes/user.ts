@@ -77,7 +77,6 @@ export async function login(req: Request, res: Response) {
 }
 
 export async function getUser(req: Request, res: Response) {
-  console.log(req.session.userId);
   if (!req.session.userId) {
     res.status(404).end('Please, login first.');
   }

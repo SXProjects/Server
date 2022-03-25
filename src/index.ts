@@ -8,14 +8,22 @@ import cors from 'cors';
 import { WebSocketServer, WebSocket } from 'ws';
 import session from 'express-session';
 import config from './config';
+import connectRedis from 'connect-redis';
+import { createClient } from 'redis';
 
 const app = express();
 const server = createServer(app);
 const websocket = new WebSocketServer({ server: server });
+const RedisStore = connectRedis(session);
+const redisClient = createClient({
+  port: 6379,
+  host: '127.0.0.1',
+});
 
 app.use(
   session({
     name: config.LOGIN_COOKIE,
+    store: new RedisStore({ client: redisClient as any, disableTouch: true }),
     secret: config.secret,
     saveUninitialized: false,
     cookie: {
@@ -23,6 +31,7 @@ app.use(
       httpOnly: true,
       sameSite: 'lax',
     },
+    resave: false,
   })
 );
 
@@ -31,7 +40,7 @@ app.use(router);
 
 websocket.on('connection', (ws: WebSocket) => {
   app.set('websocket', ws);
-  console.log('Connected');
+  console.log('Someone connected to websocket.');
 });
 
 createConnection().then(async (conn) => {
