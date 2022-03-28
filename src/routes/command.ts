@@ -30,19 +30,14 @@ export async function getCmd(req: Request, res: Response) {
 export async function sendCmd(req: Request, res: Response) {
   const websocket: WebSocket = req.app.get('websocket');
   websocket.send(JSON.stringify(req.body));
-  let response = {};
-  await websocket.on('message', (msg: Buffer) => {
+  websocket.on('message', (msg: Buffer) => {
     const msgJson: any[] = JSON.parse(msg.toString());
-    msgJson.forEach((element) => {
-      response = element;
-    });
+    if (!JSON.parse(JSON.stringify(msgJson)).hasOwnProperty('error')) {
+      res.status(200).end(JSON.stringify(msgJson));
+    } else {
+      res.status(400).end(JSON.stringify(msgJson));
+    }
   });
-
-  if (!JSON.parse(JSON.stringify(response)).hasOwnProperty('error')) {
-    res.status(200).send(JSON.stringify(response));
-  } else {
-    res.status(400).send(JSON.stringify(response));
-  }
 }
 
 async function checkCommandExist(newCommand: any) {
