@@ -40,7 +40,7 @@ app.use(router);
 
 websocket.on('connection', (ws: WebSocket) => {
   app.set('websocket', ws);
-  console.log(`${ws.bufferedAmount} connected to websocket.`);
+  console.log(`Someone connected to websocket.`);
 });
 
 createConnection().then(async (conn) => {
