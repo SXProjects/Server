@@ -33,9 +33,9 @@ export async function sendCmd(req: Request, res: Response) {
   await websocket.on('message', (msg: Buffer) => {
     const msgJson: any[] = JSON.parse(msg.toString());
     if (!JSON.parse(JSON.stringify(msgJson)).hasOwnProperty('error')) {
-      res.status(200).send(JSON.stringify(msgJson));
+      res.status(200).end(JSON.stringify(msgJson));
     } else {
-      res.status(400).send(JSON.stringify(msgJson));
+      res.status(400).end(JSON.stringify(msgJson));
     }
   });
 }
