@@ -5,7 +5,7 @@
   "author": "Sergey Dyakov <s.dyakov9@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "pm2": "pm2 start processes.json --no-daemon",
+    "pm2": "pm2 start dist/index.js --name sh-server",
     "dev": "nodemon --exec ts-node src/index.ts",
     "start": "node dist/index.js",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",

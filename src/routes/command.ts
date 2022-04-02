@@ -30,7 +30,7 @@ export async function getCmd(req: Request, res: Response) {
 export async function sendCmd(req: Request, res: Response) {
   const websocket: WebSocket = req.app.get('websocket');
   websocket.send(JSON.stringify(req.body));
-  websocket.on('message', (msg: Buffer) => {
+  await websocket.on('message', (msg: Buffer) => {
     const msgJson: any[] = JSON.parse(msg.toString());
     if (!JSON.parse(JSON.stringify(msgJson)).hasOwnProperty('error')) {
       res.status(200).send(JSON.stringify(msgJson));
