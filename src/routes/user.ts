@@ -22,6 +22,44 @@ export async function initAdminUser() {
   }
 }
 
+export async function changePassword(req: Request, res: Response) {
+  const loggedInUser = await User.findOne({ id: req.session.userId });
+
+  if (loggedInUser !== null) {
+    const valid = await argon2.verify(
+      loggedInUser!.password as string,
+      req.body.oldPassword
+    );
+
+    if (!valid) {
+      res.status(403).send({
+        error: 'Старый пароль неверен, попробуйте еще раз.',
+      });
+      return;
+    }
+
+    loggedInUser!.password = await argon2.hash(req.body.newPassword);
+    res.status(200).end();
+  } else {
+    res.status(404).send({
+      error: 'Авторизуйтесь и попробуйте еще раз.',
+    });
+  }
+}
+
+export async function changeUsername(req: Request, res: Response) {
+  const loggedInUser = await User.findOne({ id: req.session.userId });
+
+  if (loggedInUser !== null) {
+    loggedInUser!.name = req.body.newUsername;
+    res.status(200).end();
+  } else {
+    res.status(404).send({
+      error: 'Авторизуйтесь и попробуйте еще раз.',
+    });
+  }
+}
+
 export async function register(req: Request, res: Response) {
   const loggedInUser = await User.findOne({ id: req.session.userId });
 
@@ -50,6 +88,10 @@ export async function register(req: Request, res: Response) {
     }).save();
 
     res.status(200).end();
+  } else {
+    res.status(404).send({
+      error: 'Авторизуйтесь и попробуйте еще раз.',
+    });
   }
 }
 
