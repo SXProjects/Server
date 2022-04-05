@@ -2,7 +2,7 @@ import { createServer } from 'http';
 import { router } from './router';
 import { createConnection } from 'typeorm';
 import { initAdminUser } from './routes/user';
-import { Request, Response } from 'express';
+import { createClient } from 'redis';
 
 import express from 'express';
 import cors from 'cors';
@@ -10,7 +10,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import session from 'express-session';
 import config from './config';
 import connectRedis from 'connect-redis';
-import { createClient } from 'redis';
+import path from 'path';
 
 const app = express();
 const server = createServer(app);
@@ -36,6 +36,7 @@ app.use(
   })
 );
 
+app.use(express.static(path.join(__dirname, '/usersImage')));
 app.use(cors({ origin: true, credentials: true }));
 app.use(router);
 

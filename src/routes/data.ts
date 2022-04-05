@@ -5,8 +5,9 @@ import { Server, WebSocket } from 'ws';
 export async function sendData(req: Request, res: Response) {
   const websocket: WebSocket = req.app.get('websocket');
   websocket.send(JSON.stringify(req.body));
-  await websocket.on('message', (msg: Buffer) => {
+  websocket.on('message', (msg: Buffer) => {
     const msgJson: any[] = JSON.parse(msg.toString());
+    console.log(msgJson);
     msgJson.forEach((element) => {
       saveCmd(element);
     });
