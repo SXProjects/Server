@@ -35,12 +35,15 @@ async function compileDevices(
 }
 
 export async function saveCmd(commandJson: any) {
+  console.log('commandJSOn');
+  console.log(commandJson);
+  console.log(JSON.stringify(commandJson.data));
   checkCommandExist(commandJson);
   await Command.create({
     device_id: commandJson.device_id,
     time: new Date(commandJson.time),
     command_name: commandJson.command_name,
-    data: commandJson.data,
+    data: JSON.parse(JSON.stringify(commandJson.data)),
   }).save();
 }
 
@@ -82,15 +85,15 @@ export async function getCmd(req: Request, res: Response) {
 
   const commands: Command[] = [];
 
-  physical.virtualIds.forEach(async (element) => {
+  for (let i = 0; i < physical.virtualIds.length; i++) {
     const commandsForCurrentDevice = await Command.find({
-      where: { device_id: element },
+      where: { device_id: physical.virtualIds[i] },
     });
 
-    commandsForCurrentDevice.forEach((element) => {
-      commands.push(element);
-    });
-  });
+    for (let i = 0; i < commandsForCurrentDevice.length; i++) {
+      commands.push(commandsForCurrentDevice[i]);
+    }
+  }
 
   res.status(200).send(JSON.stringify(commands));
 }
@@ -116,7 +119,7 @@ async function checkCommandExist(newCommand: any) {
     },
   });
 
-  if (command?.device_id != null) {
+  if (command !== undefined) {
     await Command.remove(command as Command);
   }
 }

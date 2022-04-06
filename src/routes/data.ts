@@ -7,8 +7,8 @@ export async function sendData(req: Request, res: Response) {
   websocket.send(JSON.stringify(req.body));
   websocket.on('message', (msg: Buffer) => {
     const msgJson: any[] = JSON.parse(msg.toString());
-    console.log(msgJson);
     msgJson.forEach((element) => {
+      console.log(element);
       saveCmd(element);
     });
   });
