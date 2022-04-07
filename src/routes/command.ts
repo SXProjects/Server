@@ -45,8 +45,6 @@ export async function getCmd(req: Request, res: Response) {
         return;
       } else if (devices!.version === request.version) {
         res.status(409).send({ error: 'Устройство уже добавлено в систему.' });
-      } else {
-        res.status(200).send({ command_name: 'device_config_info' });
       }
     }
 
@@ -63,34 +61,33 @@ export async function getCmd(req: Request, res: Response) {
       websocket.send(JSON.stringify(command));
     });
 
-    websocket.on('message', async (msgRaw: Buffer) => {
+    websocket.on('message', (msgRaw: Buffer) => {
       const msgParsed: any[] = JSON.parse(msgRaw.toString());
       console.log(msgParsed);
       if (msgParsed[0].error === undefined) {
         virtualDeviceIds.push(msgParsed[0].device_id);
       }
 
-      if (virtualDeviceIds.length !== 0) {
-        await Devices.create({
-          version: request.version,
-          physicalId: request.unique_id,
-          virtualIds: virtualDeviceIds,
-        }).save();
-
-        websocket.send({
+      websocket.send(
+        JSON.stringify({
           command_name: 'device_config_info',
           device_id: virtualDeviceIds,
-        });
-
-        websocket.on('message', (msgRaw: Buffer) => {
-          const msgParsed: any[] = JSON.parse(msgRaw.toString());
-          res.status(200).send(JSON.stringify(msgParsed));
-        });
-      } else {
-        res.status(400).end();
-        return;
-      }
+        })
+      );
     });
+    websocket.on('message', async (msgRaw: Buffer) => {
+      const msgParsed: any[] = JSON.parse(msgRaw.toString());
+      await Devices.create({
+        version: request.version,
+        physicalId: request.unique_id,
+        virtualIds: virtualDeviceIds,
+      }).save();
+
+      res.status(200).send(JSON.stringify(msgParsed));
+    });
+  } else {
+    res.status(400).end();
+    return;
   }
 
   if (request.command_name === 'wakeup') {
