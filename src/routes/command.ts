@@ -28,20 +28,22 @@ export async function getCmd(req: Request, res: Response) {
       return;
     }
 
-    if (devices!.version === request.version) {
-      devices!.version = request.version;
-      devices!.save();
+    if (devices !== undefined) {
+      if (devices!.version === request.version) {
+        devices!.version = request.version;
+        devices!.save();
 
-      const command = {
-        command_name: 'device_config_info',
-        device_id: devices!.virtualIds,
-      };
-      websocket.send(JSON.stringify(command));
-      websocket.on('message', (msgRaw: Buffer) => {
-        const msgParsed: any[] = JSON.parse(msgRaw.toString());
-        res.status(200).send(msgParsed);
-      });
-      return;
+        const command = {
+          command_name: 'device_config_info',
+          device_id: devices!.virtualIds,
+        };
+        websocket.send(JSON.stringify(command));
+        websocket.on('message', (msgRaw: Buffer) => {
+          const msgParsed: any[] = JSON.parse(msgRaw.toString());
+          res.status(200).send(msgParsed);
+        });
+        return;
+      }
     }
 
     let virtualDeviceIds: number[] = [];
