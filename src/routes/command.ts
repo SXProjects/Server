@@ -51,6 +51,7 @@ export async function getCmd(req: Request, res: Response) {
     let virtualDeviceIds: number[] = [];
 
     for (let i = 0; i < request.device_type.length; i++) {
+      console.log(i);
       const command = {
         command_name: 'add_device',
         location: `home/${request.unique_id}/${request.device_type[0].type}`,
@@ -64,6 +65,8 @@ export async function getCmd(req: Request, res: Response) {
         console.log(msgParsed);
         if (msgParsed[0].error === undefined) {
           virtualDeviceIds.push(msgParsed[0].device_id);
+          console.log('websocket stop');
+          console.log(i);
         }
       });
     }
@@ -80,6 +83,7 @@ export async function getCmd(req: Request, res: Response) {
         device_id: virtualDeviceIds,
       })
     );
+    console.log('device config sent');
 
     websocket.on('message', (msgRaw: Buffer) => {
       const msgParsed: any[] = JSON.parse(msgRaw.toString());
