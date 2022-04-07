@@ -3,7 +3,7 @@ import cors from 'cors';
 import multer from 'multer';
 
 import { Request } from 'express';
-import { getParameters, saveParameters } from './routes/command';
+import { getParameters, saveParameters } from './routes/parameters';
 import {
   changePassword,
   changeUsername,
