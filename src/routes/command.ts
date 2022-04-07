@@ -2,6 +2,8 @@ import { Command } from '../db/entity/Command';
 import { Request, Response } from 'express';
 import { WebSocket } from 'ws';
 import { Devices } from '../db/entity/Devices';
+import { FindOneOptions } from 'typeorm';
+import { Mutex } from 'async-mutex';
 
 export async function saveCmd(commandJson: any) {
   console.log(JSON.stringify(commandJson.data));
@@ -15,11 +17,14 @@ export async function saveCmd(commandJson: any) {
 }
 
 export async function getCmd(req: Request, res: Response) {
+  const mutex = new Mutex();
   const request = JSON.parse(JSON.stringify(req.body));
   const websocket: WebSocket = req.app.get('websocket');
 
   if (request.command_name === 'configure') {
-    const devices = await Devices.findOne({ physicalId: request.unique_id });
+    const devices = await Devices.findOne({
+      physicalId: request.unique_id,
+    } as FindOneOptions<Devices>);
 
     if (request.device_type === undefined || request.device_type.length === 0) {
       res.status(400).send({
@@ -63,14 +68,18 @@ export async function getCmd(req: Request, res: Response) {
     }
 
     websocket.send(JSON.stringify(commands));
-    websocket.on('message', (msgRaw: Buffer) => {
-      const msgParsed: any[] = JSON.parse(msgRaw.toString());
+    mutex.acquire().then((release) => {
+      websocket.on('message', (msgRaw: Buffer) => {
+        const msgParsed: any[] = JSON.parse(msgRaw.toString());
 
-      for (let i = 0; i < msgParsed.length; i++) {
-        console.log(`Number inter of response ${i}`);
-        virtualDeviceIds.push(msgParsed[0].device_id);
-      }
-      console.log('Iter end.');
+        for (let i = 0; i < msgParsed.length; i++) {
+          console.log(`Number inter of response ${i}`);
+          virtualDeviceIds.push(msgParsed[0].device_id);
+        }
+        console.log('Iter end.');
+      });
+
+      release();
     });
 
     await Devices.create({
@@ -97,7 +106,9 @@ export async function getCmd(req: Request, res: Response) {
   }
 
   if (request.command_name === 'wakeup') {
-    const physical = await Devices.findOne({ physicalId: request.unique_id }); // get row with virtualIds and version via physicalId
+    const physical = await Devices.findOne({
+      physicalId: request.unique_id,
+    } as FindOneOptions<Devices>); // get row with virtualIds and version via physicalId
 
     if (physical === undefined) {
       res.status(404).send({
@@ -108,9 +119,9 @@ export async function getCmd(req: Request, res: Response) {
 
     const commands: Command[] = [];
 
-    for (let i = 0; i < physical.virtualIds.length; i++) {
+    for (let i = 0; i < physical!.virtualIds.length; i++) {
       const commandsForCurrentDevice = await Command.find({
-        where: { device_id: physical.virtualIds[i] },
+        where: { device_id: physical!.virtualIds[i] },
       });
 
       for (let i = 0; i < commandsForCurrentDevice.length; i++) {

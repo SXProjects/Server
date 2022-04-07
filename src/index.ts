@@ -2,7 +2,12 @@ import { createServer } from 'http';
 import { router } from './router';
 import { createConnection } from 'typeorm';
 import { initAdminUser } from './routes/user';
-import { createClient } from 'redis';
+import {
+  createClient,
+  RedisClientOptions,
+  RedisModules,
+  RedisScripts,
+} from 'redis';
 
 import express from 'express';
 import cors from 'cors';
@@ -19,7 +24,7 @@ const RedisStore = connectRedis(session);
 const redisClient = createClient({
   port: 6379,
   host: '127.0.0.1',
-});
+} as RedisClientOptions<RedisModules, RedisScripts>);
 
 app.use(
   session({

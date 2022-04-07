@@ -2,6 +2,7 @@ import * as argon2 from 'argon2';
 import { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
+import { FindOneOptions } from 'typeorm';
 import { User } from '../db/entity/User';
 import { UserPermission } from '../db/UserPermission';
 
@@ -29,7 +30,9 @@ export async function saveUserImage(req: Request, res: Response) {
 }
 
 export async function getUserImage(req: Request, res: Response) {
-  const loggedInUser = await User.findOne({ id: req.session.userId });
+  const loggedInUser = await User.findOne({
+    id: req.session.userId,
+  } as FindOneOptions<User>);
   if (loggedInUser === undefined) {
     res.status(401).send({
       error: 'Авторизуйтесь и попробуйте еще раз.',
@@ -43,7 +46,9 @@ export async function getUserImage(req: Request, res: Response) {
 }
 
 export async function changePassword(req: Request, res: Response) {
-  const loggedInUser = await User.findOne({ id: req.session.userId });
+  const loggedInUser = await User.findOne({
+    id: req.session.userId,
+  } as FindOneOptions<User>);
 
   if (loggedInUser === undefined) {
     res.status(401).send({
@@ -69,7 +74,9 @@ export async function changePassword(req: Request, res: Response) {
 }
 
 export async function changeUsername(req: Request, res: Response) {
-  const loggedInUser = await User.findOne({ id: req.session.userId });
+  const loggedInUser = await User.findOne({
+    id: req.session.userId,
+  } as FindOneOptions<User>);
 
   if (loggedInUser !== undefined) {
     res.status(401).send({
@@ -83,7 +90,9 @@ export async function changeUsername(req: Request, res: Response) {
 }
 
 export async function register(req: Request, res: Response) {
-  const loggedInUser = await User.findOne({ id: req.session.userId });
+  const loggedInUser = await User.findOne({
+    id: req.session.userId,
+  } as FindOneOptions<User>);
 
   if (loggedInUser === undefined) {
     res.status(404).send({
@@ -91,7 +100,9 @@ export async function register(req: Request, res: Response) {
     });
   }
 
-  const isUserExist = await User.findOne({ name: req.body.name });
+  const isUserExist = await User.findOne({
+    name: req.body.name,
+  } as FindOneOptions<User>);
   let permission = UserPermission.User;
 
   if (loggedInUser!.permission !== UserPermission.Admin) {
@@ -131,7 +142,9 @@ export async function register(req: Request, res: Response) {
 }
 
 export async function login(req: Request, res: Response) {
-  const user = await User.findOne({ name: req.body.name });
+  const user = await User.findOne({
+    name: req.body.name,
+  } as FindOneOptions<User>);
   if (!user) {
     res.status(404).send({
       error: 'Некоррректно введены данные.',
@@ -165,6 +178,8 @@ export async function getUser(req: Request, res: Response) {
     return;
   }
 
-  const user = await User.findOne({ id: req.session.userId });
+  const user = await User.findOne({
+    id: req.session.userId,
+  } as FindOneOptions<User>);
   res.status(200).send(user);
 }
