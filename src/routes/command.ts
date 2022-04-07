@@ -48,10 +48,10 @@ export async function getCmd(req: Request, res: Response) {
       }
     }
 
+    let commands: Object[] = [];
     let virtualDeviceIds: number[] = [];
 
     for (let i = 0; i < request.device_type.length; i++) {
-      console.log(i);
       const command = {
         command_name: 'add_device',
         location: `home/${request.unique_id}/${request.device_type[0].type}`,
@@ -59,17 +59,19 @@ export async function getCmd(req: Request, res: Response) {
         work_mode: request.device_type[0].work_mode,
       };
 
-      websocket.send(JSON.stringify(command));
-      websocket.on('message', (msgRaw: Buffer) => {
-        const msgParsed: any[] = JSON.parse(msgRaw.toString());
-        console.log(msgParsed);
-        if (msgParsed[0].error === undefined) {
-          virtualDeviceIds.push(msgParsed[0].device_id);
-          console.log('websocket stop');
-          console.log(i);
-        }
-      });
+      commands.push(command);
     }
+
+    websocket.send(JSON.stringify(commands));
+    websocket.on('message', (msgRaw: Buffer) => {
+      const msgParsed: any[] = JSON.parse(msgRaw.toString());
+
+      for (let i = 0; i < msgParsed.length; i++) {
+        console.log(`Number inter of response ${i}`);
+        virtualDeviceIds.push(msgParsed[0].device_id);
+      }
+      console.log('Iter end.');
+    });
 
     await Devices.create({
       version: request.version,
