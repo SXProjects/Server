@@ -29,6 +29,9 @@ export async function getCmd(req: Request, res: Response) {
     }
 
     if (devices!.version === request.version) {
+      devices!.version = request.version;
+      devices!.save();
+
       const command = {
         command_name: 'device_config_info',
         device_id: devices!.virtualIds,
