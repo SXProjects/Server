@@ -3,6 +3,7 @@ import { FindManyOptions, FindOneOptions } from 'typeorm';
 import { Data } from 'src/db/entity/Data';
 
 export async function saveParameters(req: Request, res: Response) {
+  console.log(req.body);
   const data = await Data.findOne({
     room: req.body.room,
   } as FindOneOptions<Data>);
@@ -26,6 +27,7 @@ export async function saveParameters(req: Request, res: Response) {
 }
 
 export async function getParameters(req: Request, res: Response) {
+  console.log(req.body);
   const dataForRoom = await Data.find({
     room: req.body.room,
   } as FindManyOptions<Data>);
