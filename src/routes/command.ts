@@ -43,6 +43,8 @@ export async function getCmd(req: Request, res: Response) {
           res.status(200).send(msgParsed);
         });
         return;
+      } else if (devices!.version === request.version) {
+        res.status(409).send({ error: 'Устройство уже добавлено в систему.' });
       } else {
         res.status(200).send({ command_name: 'device_config_info' });
       }
