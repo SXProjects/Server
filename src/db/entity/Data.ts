@@ -1,19 +1,19 @@
 import { Column, Entity, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
 
 @Entity()
-export class Command extends BaseEntity {
+export class Data extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  device_id: number;
+  data_type: string;
 
   @Column()
   time: Date;
 
   @Column()
-  command_name: string;
+  data: string;
 
-  @Column({ type: 'jsonb' })
-  data: object[];
+  @Column()
+  room: string;
 }

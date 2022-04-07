@@ -3,8 +3,7 @@ import cors from 'cors';
 import multer from 'multer';
 
 import { Request } from 'express';
-import { getCmd, sendCmd } from './routes/command';
-import { printError, sendData } from './routes/data';
+import { getParameters, saveParameters } from './routes/command';
 import {
   changePassword,
   changeUsername,
@@ -34,11 +33,9 @@ const router = express.Router();
 router.use(json());
 router.use(cors({ origin: true, credentials: true }));
 
-router.post('/data/send', sendData);
-router.post('/command/send', sendCmd);
-router.post('/command/get', getCmd);
+router.post('/parameters/send', saveParameters);
+router.post('/parameters/get', getParameters);
 router.post('/user/login', login);
-router.post('/data/sendError', printError);
 router.delete('/user/logout', logout);
 router.post('/user/register', register);
 router.post('/user/change/password', changePassword);
