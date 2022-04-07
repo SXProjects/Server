@@ -3,40 +3,7 @@ import { Request, Response } from 'express';
 import { WebSocket } from 'ws';
 import { Devices } from '../db/entity/Devices';
 
-async function compileDevices(
-  physicalDeviceId: number,
-  virtualDeviceTypes: Object[],
-  version: number,
-  websocketConnection: WebSocket
-) {
-  let virtualDeviceIds: number[] = [];
-
-  virtualDeviceTypes.forEach(async (element: any) => {
-    console.log(element);
-    const command = {
-      command_name: 'add_device',
-      location: `home/${physicalDeviceId}/${element.type}`,
-      device_type: element.type,
-      work_mode: element.work_mode,
-    };
-    websocketConnection.send(JSON.stringify(command));
-  });
-
-  websocketConnection.on('message', (msgRaw: Buffer) => {
-    const msgParsed: any[] = JSON.parse(msgRaw.toString());
-    virtualDeviceIds.push(msgParsed[0].device_id);
-  });
-
-  await Devices.create({
-    version: version,
-    physicalId: physicalDeviceId,
-    virtualIds: virtualDeviceIds,
-  }).save();
-}
-
 export async function saveCmd(commandJson: any) {
-  console.log('commandJSOn');
-  console.log(commandJson);
   console.log(JSON.stringify(commandJson.data));
   checkCommandExist(commandJson);
   await Command.create({
@@ -52,57 +19,105 @@ export async function getCmd(req: Request, res: Response) {
   const websocket: WebSocket = req.app.get('websocket');
 
   if (request.command_name === 'configure') {
-    compileDevices(
-      request.unique_id,
-      request.device_type,
-      request.version,
-      websocket
-    );
-    res.status(200).end();
-    return;
-  }
+    const devices = await Devices.findOne({ physicalId: request.unique_id });
 
-  const physical = await Devices.findOne({ physicalId: request.unique_id }); // get row with virtualIds and version via physicalId
+    if (request.device_type === undefined || request.device_type.length === 0) {
+      res.status(400).send({
+        error: 'Нет информации о типе подключенных к системе устройств.',
+      });
+      return;
+    }
 
-  if (physical === undefined) {
-    res.status(404).send({
-      error: 'Устройство не найдено.',
+    if (devices!.version === request.version) {
+      const command = {
+        command_name: 'device_config_info',
+        device_id: devices!.virtualIds,
+      };
+      websocket.send(JSON.stringify(command));
+      websocket.on('message', (msgRaw: Buffer) => {
+        const msgParsed: any[] = JSON.parse(msgRaw.toString());
+        res.status(200).send(msgParsed);
+      });
+      return;
+    }
+
+    let virtualDeviceIds: number[] = [];
+
+    request.device_type.forEach(async (element: any) => {
+      console.log(element);
+      const command = {
+        command_name: 'add_device',
+        location: `home/${request.unique_id}/${element.type}`,
+        device_type: element.type,
+        work_mode: element.work_mode,
+      };
+      websocket.send(JSON.stringify(command));
     });
-    return;
-  }
 
-  if (physical!.version !== request.version) {
-    const command = {
-      command_name: 'device_config_info',
-      device_id: physical.virtualIds,
-    };
-    websocket.send(JSON.stringify(command));
     websocket.on('message', (msgRaw: Buffer) => {
       const msgParsed: any[] = JSON.parse(msgRaw.toString());
-      res.status(200).send(msgParsed);
-    });
-  }
-
-  const commands: Command[] = [];
-
-  for (let i = 0; i < physical.virtualIds.length; i++) {
-    const commandsForCurrentDevice = await Command.find({
-      where: { device_id: physical.virtualIds[i] },
+      console.log(msgParsed);
+      if (msgParsed[0].error === undefined) {
+        virtualDeviceIds.push(msgParsed[0].device_id);
+      }
     });
 
-    for (let i = 0; i < commandsForCurrentDevice.length; i++) {
-      commands.push(commandsForCurrentDevice[i]);
+    if (virtualDeviceIds.length !== 0) {
+      await Devices.create({
+        version: request.version,
+        physicalId: request.unique_id,
+        virtualIds: virtualDeviceIds,
+      }).save();
+
+      websocket.send({
+        command_name: 'device_config_info',
+        device_id: virtualDeviceIds,
+      });
+
+      websocket.on('message', (msgRaw: Buffer) => {
+        const msgParsed: any[] = JSON.parse(msgRaw.toString());
+        res.status(200).send(JSON.stringify(msgParsed));
+      });
+    } else {
+      res.status(400).end();
+      return;
     }
   }
 
-  res.status(200).send(JSON.stringify(commands));
+  if (request.command_name === 'wakeup') {
+    const physical = await Devices.findOne({ physicalId: request.unique_id }); // get row with virtualIds and version via physicalId
+
+    if (physical === undefined) {
+      res.status(404).send({
+        error: 'Устройство не найдено.',
+      });
+      return;
+    }
+
+    const commands: Command[] = [];
+
+    for (let i = 0; i < physical.virtualIds.length; i++) {
+      const commandsForCurrentDevice = await Command.find({
+        where: { device_id: physical.virtualIds[i] },
+      });
+
+      for (let i = 0; i < commandsForCurrentDevice.length; i++) {
+        commands.push(commandsForCurrentDevice[i]);
+      }
+    }
+
+    res.status(200).send(JSON.stringify(commands));
+    return;
+  }
 }
 
 export async function sendCmd(req: Request, res: Response) {
   const websocket: WebSocket = req.app.get('websocket');
   websocket.send(JSON.stringify(req.body));
+
   await websocket.on('message', (msgRaw: Buffer) => {
     const msgParsed: any[] = JSON.parse(msgRaw.toString());
+
     if (!JSON.parse(JSON.stringify(msgParsed)).hasOwnProperty('error')) {
       res.status(200).end(JSON.stringify(msgParsed));
     } else {

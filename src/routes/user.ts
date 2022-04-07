@@ -31,7 +31,7 @@ export async function saveUserImage(req: Request, res: Response) {
 export async function getUserImage(req: Request, res: Response) {
   const loggedInUser = await User.findOne({ id: req.session.userId });
   if (loggedInUser === undefined) {
-    res.status(404).send({
+    res.status(401).send({
       error: 'Авторизуйтесь и попробуйте еще раз.',
     });
   }
@@ -46,7 +46,7 @@ export async function changePassword(req: Request, res: Response) {
   const loggedInUser = await User.findOne({ id: req.session.userId });
 
   if (loggedInUser === undefined) {
-    res.status(404).send({
+    res.status(401).send({
       error: 'Авторизуйтесь и попробуйте еще раз.',
     });
   }
@@ -72,7 +72,7 @@ export async function changeUsername(req: Request, res: Response) {
   const loggedInUser = await User.findOne({ id: req.session.userId });
 
   if (loggedInUser !== undefined) {
-    res.status(404).send({
+    res.status(401).send({
       error: 'Авторизуйтесь и попробуйте еще раз.',
     });
   }
@@ -161,7 +161,7 @@ export function logout(req: Request, res: Response) {
 
 export async function getUser(req: Request, res: Response) {
   if (!req.session.userId) {
-    res.status(404).end('Авторизуйтесь и попробуйте еще раз.');
+    res.status(401).end('Авторизуйтесь и попробуйте еще раз.');
     return;
   }
 
