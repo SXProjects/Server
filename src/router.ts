@@ -4,7 +4,7 @@ import multer from 'multer';
 
 import { Request } from 'express';
 import { getCmd, sendCmd } from './routes/command';
-import { sendData } from './routes/data';
+import { printError, sendData } from './routes/data';
 import {
   changePassword,
   changeUsername,
@@ -38,6 +38,7 @@ router.post('/data/send', sendData);
 router.post('/command/send', sendCmd);
 router.post('/command/get', getCmd);
 router.post('/user/login', login);
+router.post('/data/sendError', printError);
 router.delete('/user/logout', logout);
 router.post('/user/register', register);
 router.post('/user/change/password', changePassword);

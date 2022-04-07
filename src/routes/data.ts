@@ -14,3 +14,8 @@ export async function sendData(req: Request, res: Response) {
   });
   res.status(200).end();
 }
+
+export function printError(req: Request, res: Response) {
+  console.log(req.body);
+  res.status(200).end();
+}
