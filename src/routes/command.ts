@@ -48,48 +48,41 @@ export async function getCmd(req: Request, res: Response) {
       }
     }
 
-    request.device_type.forEach(async (element: any) => {
-      console.log(element);
+    let virtualDeviceIds: number[] = [];
+
+    for (let i = 0; i < request.device_type.length; i++) {
       const command = {
         command_name: 'add_device',
-        location: `home/${request.unique_id}/${element.type}`,
-        device_type: element.type,
-        work_mode: element.work_mode,
+        location: `home/${request.unique_id}/${request.device_type[0].type}`,
+        device_type: request.device_type[0].type,
+        work_mode: request.device_type[0].work_mode,
       };
+
       websocket.send(JSON.stringify(command));
-    });
+      websocket.on('message', (msgRaw: Buffer) => {
+        const msgParsed: any[] = JSON.parse(msgRaw.toString());
+        console.log(msgParsed);
+        if (msgParsed[0].error === undefined) {
+          virtualDeviceIds.push(msgParsed[0].device_id);
+        }
+      });
+    }
+
+    await Devices.create({
+      version: request.version,
+      physicalId: request.unique_id,
+      virtualIds: virtualDeviceIds,
+    }).save();
+
+    websocket.send(
+      JSON.stringify({
+        command_name: 'device_config_info',
+        device_id: virtualDeviceIds,
+      })
+    );
 
     websocket.on('message', (msgRaw: Buffer) => {
       const msgParsed: any[] = JSON.parse(msgRaw.toString());
-      console.log(msgParsed);
-      let virtualDeviceIds: number[] = [];
-
-      if (msgParsed[0].error === undefined) {
-        virtualDeviceIds.push(msgParsed[0].device_id);
-      }
-
-      websocket.send(
-        JSON.stringify({
-          command_name: 'device_config_info',
-          device_id: virtualDeviceIds,
-        })
-      );
-    });
-
-    websocket.on('message', async (msgRaw: Buffer) => {
-      let virtualDeviceIds: number[] = [];
-      const msgParsed: any[] = JSON.parse(msgRaw.toString());
-
-      for (let i = 0; msgParsed[0].devices.length; i++) {
-        virtualDeviceIds.push(msgParsed[0].devices[i].device_id);
-      }
-
-      await Devices.create({
-        version: request.version,
-        physicalId: request.unique_id,
-        virtualIds: virtualDeviceIds,
-      }).save();
-
       res.status(200).send(JSON.stringify(msgParsed));
     });
   } else {
