@@ -15,6 +15,7 @@ import {
   saveUserImage,
 } from './routes/user';
 import { json } from 'express';
+import { sendCmd, getCmd } from './routes/command';
 
 const storage = multer.diskStorage({
   destination: function (req: Request, file, cb) {
@@ -36,6 +37,8 @@ router.use(cors({ origin: true, credentials: true }));
 router.post('/parameters/send', saveParameters);
 router.get('/parameters/get', getParameters);
 router.get('/parameters/rooms', getRooms);
+router.post('/command/send', sendCmd);
+router.post('/command/get', getCmd);
 router.post('/user/login', login);
 router.post('/user/logout', logout);
 router.post('/user/register', register);
