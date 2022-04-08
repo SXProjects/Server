@@ -34,7 +34,7 @@ router.use(json());
 router.use(cors({ origin: true, credentials: true }));
 
 router.post('/parameters/send', saveParameters);
-router.post('/parameters/get', getParameters);
+router.get('/parameters/get', getParameters);
 router.get('/parameters/rooms', getRooms);
 router.post('/user/login', login);
 router.delete('/user/logout', logout);

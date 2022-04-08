@@ -31,9 +31,7 @@ export async function saveParameters(req: Request, res: Response) {
 
 export async function getParameters(req: Request, res: Response) {
   console.log(req.body);
-  const dataForRoom = await Data.find({
-    room: req.body.room,
-  });
+  const dataForRoom = await Data.find();
 
   console.log(dataForRoom);
 
@@ -42,7 +40,7 @@ export async function getParameters(req: Request, res: Response) {
     return;
   }
 
-  res.status(200).send(dataForRoom);
+  res.status(200).send(JSON.stringify(dataForRoom));
 }
 
 export async function getRooms(req: Request, res: Response) {
