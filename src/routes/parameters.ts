@@ -1,36 +1,41 @@
 import { Request, Response } from 'express';
 import { FindManyOptions, FindOneOptions } from 'typeorm';
-import { Data } from 'src/db/entity/Data';
+import { Data } from '../db/entity/Data';
 
 export async function saveParameters(req: Request, res: Response) {
   console.log(req.body);
-  const data = await Data.findOne({
-    room: req.body.room,
-  } as FindOneOptions<Data>);
 
   req.body.parameters.forEach(async (element: any) => {
+    const data = await Data.findOne({
+      room: req.body.room,
+      data_type: element.data_type,
+    });
+
     if (data === undefined) {
       await Data.create({
         data_type: element.data_type,
         time: new Date(),
-        data: element.data.toString(),
+        data: element.data as string,
         room: req.body.room,
       }).save();
-      res.status(200).end();
+    } else {
+      data!.data_type = element.data_type;
+      data!.time = new Date();
+      data!.data = element.data as string;
+      data!.save();
     }
-
-    data!.data_type = req.body.data_type;
-    (data!.time = req.body.time), (data!.data = req.body.data.toString());
-
-    res.status(200).end();
   });
+
+  res.status(200).end();
 }
 
 export async function getParameters(req: Request, res: Response) {
   console.log(req.body);
   const dataForRoom = await Data.find({
     room: req.body.room,
-  } as FindManyOptions<Data>);
+  });
+
+  console.log(dataForRoom);
 
   if (dataForRoom === undefined) {
     res.status(404).end();
@@ -38,4 +43,21 @@ export async function getParameters(req: Request, res: Response) {
   }
 
   res.status(200).send(dataForRoom);
+}
+
+export async function getRooms(req: Request, res: Response) {
+  const rooms = await Data.find();
+  let roomNames: string[] = [];
+
+  for (let i = 0; i < rooms.length; i++) {
+    roomNames.push(rooms[i].room);
+  }
+
+  roomNames = [...new Set(roomNames)];
+
+  if (roomNames.length !== 0) {
+    res.status(200).send(JSON.stringify(roomNames));
+  } else {
+    res.status(404).send(JSON.stringify({ error: 'Комнат не найдено.' }));
+  }
 }

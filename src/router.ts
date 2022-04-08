@@ -3,7 +3,7 @@ import cors from 'cors';
 import multer from 'multer';
 
 import { Request } from 'express';
-import { getParameters, saveParameters } from './routes/parameters';
+import { getParameters, getRooms, saveParameters } from './routes/parameters';
 import {
   changePassword,
   changeUsername,
@@ -35,6 +35,7 @@ router.use(cors({ origin: true, credentials: true }));
 
 router.post('/parameters/send', saveParameters);
 router.post('/parameters/get', getParameters);
+router.get('/parameters/rooms', getRooms);
 router.post('/user/login', login);
 router.delete('/user/logout', logout);
 router.post('/user/register', register);

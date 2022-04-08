@@ -32,7 +32,7 @@ export async function saveUserImage(req: Request, res: Response) {
 export async function getUserImage(req: Request, res: Response) {
   const loggedInUser = await User.findOne({
     id: req.session.userId,
-  } as FindOneOptions<User>);
+  });
   if (loggedInUser === undefined) {
     res.status(401).send({
       error: 'Авторизуйтесь и попробуйте еще раз.',
@@ -48,7 +48,7 @@ export async function getUserImage(req: Request, res: Response) {
 export async function changePassword(req: Request, res: Response) {
   const loggedInUser = await User.findOne({
     id: req.session.userId,
-  } as FindOneOptions<User>);
+  });
 
   if (loggedInUser === undefined) {
     res.status(401).send({
@@ -76,7 +76,7 @@ export async function changePassword(req: Request, res: Response) {
 export async function changeUsername(req: Request, res: Response) {
   const loggedInUser = await User.findOne({
     id: req.session.userId,
-  } as FindOneOptions<User>);
+  });
 
   if (loggedInUser !== undefined) {
     res.status(401).send({
@@ -92,7 +92,7 @@ export async function changeUsername(req: Request, res: Response) {
 export async function register(req: Request, res: Response) {
   const loggedInUser = await User.findOne({
     id: req.session.userId,
-  } as FindOneOptions<User>);
+  });
 
   if (loggedInUser === undefined) {
     res.status(404).send({
@@ -102,7 +102,7 @@ export async function register(req: Request, res: Response) {
 
   const isUserExist = await User.findOne({
     name: req.body.name,
-  } as FindOneOptions<User>);
+  });
   let permission = UserPermission.User;
 
   if (loggedInUser!.permission !== UserPermission.Admin) {
@@ -144,7 +144,7 @@ export async function register(req: Request, res: Response) {
 export async function login(req: Request, res: Response) {
   const user = await User.findOne({
     name: req.body.name,
-  } as FindOneOptions<User>);
+  });
   if (!user) {
     res.status(404).send({
       error: 'Некоррректно введены данные.',
@@ -180,6 +180,6 @@ export async function getUser(req: Request, res: Response) {
 
   const user = await User.findOne({
     id: req.session.userId,
-  } as FindOneOptions<User>);
+  });
   res.status(200).send(user);
 }
