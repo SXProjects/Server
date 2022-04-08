@@ -3,10 +3,10 @@ import { router } from './router';
 import { createConnection } from 'typeorm';
 import { initAdminUser } from './routes/user';
 import { createClient } from 'redis';
+import { WebSocketServer, WebSocket } from 'ws';
 
 import express from 'express';
 import cors from 'cors';
-import { WebSocketServer, WebSocket } from 'ws';
 import session from 'express-session';
 import config from './config';
 import connectRedis from 'connect-redis';

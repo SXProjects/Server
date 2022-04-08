@@ -31,7 +31,7 @@ export async function saveUserImage(req: Request, res: Response) {
 
 export async function getUserImage(req: Request, res: Response) {
   const loggedInUser = await User.findOne({
-    id: req.session.userId,
+    id: req.body.userId,
   });
   if (loggedInUser === undefined) {
     res.status(401).send({
@@ -47,7 +47,7 @@ export async function getUserImage(req: Request, res: Response) {
 
 export async function changePassword(req: Request, res: Response) {
   const loggedInUser = await User.findOne({
-    id: req.session.userId,
+    id: req.body.userId,
   });
 
   if (loggedInUser === undefined) {
@@ -75,10 +75,10 @@ export async function changePassword(req: Request, res: Response) {
 
 export async function changeUsername(req: Request, res: Response) {
   const loggedInUser = await User.findOne({
-    id: req.session.userId,
+    id: req.body.userId,
   });
 
-  if (loggedInUser !== undefined) {
+  if (loggedInUser === undefined) {
     res.status(401).send({
       error: 'Авторизуйтесь и попробуйте еще раз.',
     });
@@ -91,7 +91,7 @@ export async function changeUsername(req: Request, res: Response) {
 
 export async function register(req: Request, res: Response) {
   const loggedInUser = await User.findOne({
-    id: req.session.userId,
+    id: req.body.userId,
   });
 
   if (loggedInUser === undefined) {
@@ -120,7 +120,6 @@ export async function register(req: Request, res: Response) {
   }
 
   if (req.body.password!.length < 5) {
-    console.log('asdasdsd');
     res.status(409).send({ error: 'Пароль должен быть длиннее пяти символов' });
     return;
   }
@@ -145,10 +144,12 @@ export async function login(req: Request, res: Response) {
   const user = await User.findOne({
     name: req.body.name,
   });
-  if (!user) {
+
+  if (user === undefined) {
     res.status(404).send({
       error: 'Некоррректно введены данные.',
     });
+    return;
   }
 
   const valid = await argon2.verify(
@@ -162,8 +163,7 @@ export async function login(req: Request, res: Response) {
     });
   }
 
-  req.session.userId = user!.id;
-  res.status(200).end();
+  res.status(200).end(JSON.stringify(user));
 }
 
 export function logout(req: Request, res: Response) {
@@ -173,11 +173,6 @@ export function logout(req: Request, res: Response) {
 }
 
 export async function getUser(req: Request, res: Response) {
-  if (!req.session.userId) {
-    res.status(401).end('Авторизуйтесь и попробуйте еще раз.');
-    return;
-  }
-
   const user = await User.findOne({
     id: req.session.userId,
   });
